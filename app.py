@@ -6,7 +6,7 @@ app = Flask(__name__)
 app.secret_key = 'sua_secret_key_flask'
 
 # Configurações da API do TMDB
-TMDB_API_KEY = 'sua_chave_da_api'
+TMDB_API_KEY = 'sua_chave_da_api_2'
 TMDB_BASE_URL = 'link_da_api'
 
 # Lista em memória para armazenar indicações e resultados
