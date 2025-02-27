@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sugestões de Filmes</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Sugestões de Filmes</h1>
+        <a href="{{ url_for('index') }}" class="glow-on-hover">Página Inicial</a>
+
+        <!-- Filtros -->
+        <form method="GET" action="{{ url_for('sugestoes') }}">
+            <label for="genero">Gênero:</label>
+            <select id="genero" name="genero">
+                <option value="">Todos</option>
+                {% for genero in generos %}
+                    <option value="{{ genero['id'] }}" {% if genero['id'] == genero_filtro %}selected{% endif %}>{{ genero['name'] }}</option>
+                {% endfor %}
+            </select>
+
+            <!-- Controles de ordenação -->
+            <label for="ordenar_por">Ordenar por:</label>
+            <select id="ordenar_por" name="ordenar_por">
+                <option value="titulo" {% if ordenar_por == 'titulo' %}selected{% endif %}>Título</option>
+                <option value="data" {% if ordenar_por == 'data' %}selected{% endif %}>Data de Lançamento</option>
+            </select>
+
+            <label for="ordem">Ordem:</label>
+            <select id="ordem" name="ordem">
+                <option value="asc" {% if ordem == 'asc' %}selected{% endif %}>Crescente</option>
+                <option value="desc" {% if ordem == 'desc' %}selected{% endif %}>Decrescente</option>
+            </select>
+
+            <button type="submit" class="glow-on-hover">Filtrar</button>
+        </form>
+
+        <!-- Lista de filmes -->
+        {% if filmes %}
+            <h2>Filmes ({{ total_filmes }} resultados)</h2>
+            <ul>
+                {% for filme in filmes %}
+                    <li>
+                        {{ filme['title'] }}
+                        <br>
+                        <small>
+                            Data de Lançamento: {{ filme.get('release_date', 'Desconhecida') }} |
+                            Duração: {{ filme.get('runtime', 'Desconhecida') }} min
+                        </small>
+                    </li>
+                {% endfor %}
+            </ul>
+
+            <!-- Controles de paginação -->
+            <div class="paginacao">
+                {% if pagina > 1 %}
+                    <a href="{{ url_for('sugestoes', pagina=pagina-1, genero=genero_filtro, ordenar_por=ordenar_por, ordem=ordem) }}" class="glow-on-hover">Anterior</a>
+                {% endif %}
+
+                <strong>{{ pagina }}</strong>
+
+                {% if pagina < total_paginas %}
+                    <a href="{{ url_for('sugestoes', pagina=pagina+1, genero=genero_filtro, ordenar_por=ordenar_por, ordem=ordem) }}" class="glow-on-hover">Próxima</a>
+                {% endif %}
+            </div>
+        {% else %}
+            <p>Preencha os filtros para ver sugestões de filmes.</p>
+        {% endif %}
+    </div>
+</body>
+</html>

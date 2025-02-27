@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Indicar Gênero</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Indicar Gênero</h1>
+        <a href="{{ url_for('index') }}" class="glow-on-hover">Página Inicial</a>
+
+        <!-- Mensagens de flash -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash {{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <!-- Verificar se as indicações estão encerradas -->
+        {% if indicacoes_encerradas %}
+            <div class="flash error">
+                As indicações de gênero foram encerradas. O limite de 10 indicações foi atingido.
+            </div>
+        {% else %}
+            <!-- Formulário de indicação de gênero -->
+            <form method="POST" onsubmit="return confirmarIndicacao()">
+                <label for="nome">Seu Nome:</label>
+                <input type="text" id="nome" name="nome" required>
+
+                <label for="genero">Escolha um Gênero:</label>
+                <select id="genero" name="genero" required>
+                    {% for genero in generos %}
+                        <option value="{{ genero['id'] }}">{{ genero['name'] }}</option>
+                    {% endfor %}
+                </select>
+
+                <button type="submit" class="glow-on-hover">Enviar Indicação</button>
+            </form>
+        {% endif %}
+    </div>
+
+    <!-- Modal de confirmação -->
+    <div id="modalConfirmacao" class="modal">
+        <div class="modal-content">
+            <p>Você está prestes a enviar a seguinte indicação:</p>
+            <p><strong>Nome:</strong> <span id="confirmNome"></span></p>
+            <p><strong>Gênero:</strong> <span id="confirmGenero"></span></p>
+            <button onclick="document.getElementById('modalConfirmacao').style.display = 'none'" class="glow-on-hover">Cancelar</button>
+            <button onclick="document.querySelector('form').submit()" class="glow-on-hover">Confirmar</button>
+        </div>
+    </div>
+
+    <script>
+        function confirmarIndicacao() {
+            document.getElementById('confirmNome').innerText = document.getElementById('nome').value;
+            document.getElementById('confirmGenero').innerText = document.getElementById('genero').options[document.getElementById('genero').selectedIndex].text;
+            document.getElementById('modalConfirmacao').style.display = 'block';
+            return false;
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sorteio dos Filmes - Admin</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Sorteio dos Filmes - Administração</h1>
+
+        <!-- Mensagens de flash -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash {{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <!-- Botões de sorteio -->
+        <form method="POST">
+            <button type="submit" name="sortear_genero" class="glow-on-hover">Sortear Gênero</button>
+            <button type="submit" name="sortear_filme" class="glow-on-hover">Sortear Filme</button>
+            <button type="submit" name="resetar_sistema" class="glow-on-hover">Resetar Sistema</button>
+        </form>
+
+        <!-- Definir quantidade de pessoas -->
+        <h2>Definir Quantidade de Pessoas</h2>
+        <form method="POST">
+            <label for="quantidade_pessoas">Quantidade de Pessoas:</label>
+            <input type="number" id="quantidade_pessoas" name="quantidade_pessoas" min="1" required>
+            <button type="submit" name="definir_quantidade" class="glow-on-hover">Definir</button>
+        </form>
+
+        <!-- Lista de indicações -->
+        <h2>Indicações</h2>
+        <ul>
+            {% for indicacao in indicacoes %}
+                <li>
+                    {{ indicacao['nome'] }} - {{ indicacao['genero'] }}
+                    {% if indicacao['filme'] %}
+                        - Filme: {{ indicacao['filme'] }}
+                    {% endif %}
+                    <form method="POST" style="display:inline;">
+                        <input type="hidden" name="indicacao_id" value="{{ loop.index0 }}">
+                        <button type="submit" name="apagar_indicacao" class="glow-on-hover">Apagar</button>
+                    </form>
+                </li>
+            {% endfor %}
+        </ul>
+
+        <!-- Resultado do sorteio -->
+        {% if resultado %}
+            <h2>Resultado do Sorteio</h2>
+            <p>Gênero Sorteado: {{ resultado['genero_sorteado'] }}</p>
+            {% if resultado['filme_sorteado'] %}
+                <p>Filme Sorteado: {{ resultado['filme_sorteado'] }}</p>
+            {% endif %}
+        {% endif %}
+    </div>
+</body>
+</html>

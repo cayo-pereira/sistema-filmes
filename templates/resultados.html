@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resultados e Indicações</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Resultados e Indicações</h1>
+        <a href="{{ url_for('index') }}" class="glow-on-hover">Página Inicial</a>
+
+        <!-- Mensagem de indicações encerradas -->
+        {% if resultado and resultado['genero_sorteado'] and resultado['filme_sorteado'] %}
+            <div class="flash success">
+                Indicações encerradas, o sorteio já foi realizado.
+            </div>
+        {% endif %}
+
+        <!-- Botões para indicar gênero e filme -->
+        {% if not resultado or not resultado['genero_sorteado'] %}
+            <a href="{{ url_for('indicar_genero') }}" class="glow-on-hover">Indicar Gênero</a>
+        {% else %}
+            <button class="glow-on-hover" disabled>Indicar Gênero</button>
+        {% endif %}
+
+        {% if resultado and resultado['genero_sorteado'] and not resultado['filme_sorteado'] %}
+            <a href="{{ url_for('indicar_filme') }}" class="glow-on-hover">Indicar Filme</a>
+        {% else %}
+            <button class="glow-on-hover" disabled>Indicar Filme</button>
+        {% endif %}
+
+        <!-- Resultado do sorteio -->
+        {% if resultado %}
+            <h2>Resultado do Sorteio</h2>
+            <p>Gênero Sorteado: {{ resultado['genero_sorteado'] }}</p>
+            {% if resultado['filme_sorteado'] %}
+                <p>Filme Sorteado: {{ resultado['filme_sorteado'] }}</p>
+            {% endif %}
+        {% endif %}
+
+        <!-- Lista de indicações -->
+        <h2>Indicações Atuais</h2>
+        <ul>
+            {% for indicacao in indicacoes %}
+                <li>{{ indicacao['nome'] }} - {{ indicacao['genero'] }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+</body>
+</html>
