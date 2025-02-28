@@ -26,6 +26,30 @@
             <button type="submit" name="resetar_sistema" class="glow-on-hover">Resetar Sistema</button>
         </form>
 
+        <!-- Definir horário de votação -->
+        <h2>Definir Horário de Votação</h2>
+        <form method="POST">
+            <label for="data_inicio">Data de Início:</label>
+            <input type="date" id="data_inicio" name="data_inicio" required>
+
+            <label for="hora_inicio">Hora de Início:</label>
+            <input type="time" id="hora_inicio" name="hora_inicio" required>
+
+            <label for="data_fim">Data de Fim:</label>
+            <input type="date" id="data_fim" name="data_fim" required>
+
+            <label for="hora_fim">Hora de Fim:</label>
+            <input type="time" id="hora_fim" name="hora_fim" required>
+
+            <button type="submit" name="definir_horario" class="glow-on-hover">Definir Horário</button>
+        </form>
+
+        <!-- Botões de controle de votação -->
+        <form method="POST">
+            <button type="submit" name="iniciar_votacao" class="glow-on-hover">Iniciar Votação</button>
+            <button type="submit" name="parar_votacao" class="glow-on-hover">Parar Votação</button>
+        </form>
+
         <!-- Definir quantidade de pessoas -->
         <h2>Definir Quantidade de Pessoas</h2>
         <form method="POST">
