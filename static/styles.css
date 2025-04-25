@@ -263,3 +263,17 @@ li:hover {
 .modal-content button:hover {
     background-color: #222;
 }
+
+.filme-card {
+    max-height: 600px;
+    overflow-y: auto;
+}
+
+.filme-card p {
+    margin: 5px 0;
+    font-size: 14px;
+}
+
+.filme-card strong {
+    color: #ffcc00;
+}

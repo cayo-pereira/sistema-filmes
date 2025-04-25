@@ -6,27 +6,44 @@ app = Flask(__name__)
 app.secret_key = 'sua_secret_key_flask'
 
 # Configurações da API do TMDB
-TMDB_API_KEY = 'sua_chave_da_api_2'
-TMDB_BASE_URL = 'link_da_api'
+TMDB_API_KEY = '6f215bb8a87193ffde83e5487c0efe00'
+TMDB_BASE_URL = 'https://api.themoviedb.org/3'
 
 # Lista em memória para armazenar indicações e resultados
 indicacoes = []
 resultados = []  # Variável global
 
-# Função para buscar filmes por gênero
-def buscar_filmes_por_genero(genero_id, pagina=1):
+import requests
+
+# Função para buscar filmes por gênero e ordenação
+def buscar_filmes_por_genero(genero_id, pagina=1, ordenar_por='popularity', ordem='desc'):
     url = f'{TMDB_BASE_URL}/discover/movie'
     params = {
         'api_key': TMDB_API_KEY,
         'with_genres': genero_id,
         'page': pagina,
-        'language': 'pt-BR'
+        'language': 'pt-BR',
+        'sort_by': f'{ordenar_por}.{ordem}',
+        'include_adult': False
     }
-    response = requests.get(url, params=params)
-    if response.status_code == 200:
-        return response.json()
-    return None
-
+    
+    try:
+        response = requests.get(url, params=params)
+        response.raise_for_status()
+        data = response.json()
+        
+        # Verifica se temos resultados e se há overview
+        if 'results' in data:
+            for filme in data['results']:
+                print(f"Filme: {filme.get('title')} - Overview: {filme.get('overview')}")  # Log para depuração
+        # Para obter detalhes completos (incluindo runtime) precisamos de requisições adicionais
+        # Mas para sinopse (overview), já vem na resposta básica
+        return data
+        
+    except requests.exceptions.RequestException as e:
+        print(f"Erro na requisição: {e}")
+        return None
+    
 # Função para buscar gêneros
 def buscar_generos():
     url = f'{TMDB_BASE_URL}/genre/movie/list'
@@ -49,30 +66,26 @@ def index():
 def sugestoes():
     generos = buscar_generos()
     filmes = []
+    total_filmes = 0
+    total_paginas = 0
 
     genero_filtro = request.args.get('genero', '')
-    ordenar_por = request.args.get('ordenar_por', 'titulo')  # Parâmetro de ordenação
-    ordem = request.args.get('ordem', 'asc')  # Parâmetro de ordem (asc ou desc)
+    ordenar_por = request.args.get('ordenar_por', 'release_date')
+    ordem = request.args.get('ordem', 'desc')
     pagina = request.args.get('pagina', 1, type=int)
 
     if genero_filtro:
-        resultado = buscar_filmes_por_genero(genero_filtro, pagina)
+        resultado = buscar_filmes_por_genero(genero_filtro, pagina, ordenar_por, ordem)
         if resultado:
-            filmes = resultado['results']
-            total_filmes = resultado['total_results']
-            total_paginas = resultado['total_pages']
+            filmes = resultado.get('results', [])
+            total_filmes = resultado.get('total_results', 0)
+            total_paginas = resultado.get('total_pages', 0)
 
-            # Aplicar ordenação
-            if ordenar_por == 'titulo':
-                filmes.sort(key=lambda x: x['title'], reverse=(ordem == 'desc'))
-            elif ordenar_por == 'data':
+            # Aplicar ordenação local se necessário
+            if ordenar_por == 'title':
+                filmes.sort(key=lambda x: x.get('title', ''), reverse=(ordem == 'desc'))
+            elif ordenar_por == 'release_date':
                 filmes.sort(key=lambda x: x.get('release_date', ''), reverse=(ordem == 'desc'))
-        else:
-            total_filmes = 0
-            total_paginas = 0
-    else:
-        total_filmes = 0
-        total_paginas = 0
 
     return render_template(
         'sugestoes.html',

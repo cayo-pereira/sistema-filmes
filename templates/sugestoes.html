@@ -24,8 +24,8 @@
             <!-- Controles de ordenação -->
             <label for="ordenar_por">Ordenar por:</label>
             <select id="ordenar_por" name="ordenar_por">
-                <option value="titulo" {% if ordenar_por == 'titulo' %}selected{% endif %}>Título</option>
-                <option value="data" {% if ordenar_por == 'data' %}selected{% endif %}>Data de Lançamento</option>
+                <option value="release_date" {% if ordenar_por == 'release_date' %}selected{% endif %}>Data de Lançamento</option>
+                <option value="title" {% if ordenar_por == 'title' %}selected{% endif %}>Título</option>
             </select>
 
             <label for="ordem">Ordem:</label>
@@ -39,32 +39,46 @@
 
         <!-- Lista de filmes -->
         {% if filmes %}
-            <h2>Filmes ({{ total_filmes }} resultados)</h2>
-            <ul>
-                {% for filme in filmes %}
-                    <li>
-                        {{ filme['title'] }}
-                        <br>
-                        <small>
-                            Data de Lançamento: {{ filme.get('release_date', 'Desconhecida') }} |
-                            Duração: {{ filme.get('runtime', 'Desconhecida') }} min
-                        </small>
-                    </li>
-                {% endfor %}
-            </ul>
+        <div class="filmes-grid" style="display: flex; flex-wrap: wrap; gap: 20px;">
+            {% for filme in filmes %}
+            <!-- DEBUG: Mostrar dados completos do filme -->
+            <pre style="display: none;">{{ filme|tojson|safe }}</pre>
+                <div class="filme-card" style="border: 1px solid #ccc; border-radius: 8px; padding: 10px; width: 200px;">
+                    {% if filme['poster_path'] %}
+                        <img src="https://image.tmdb.org/t/p/w500{{ filme['poster_path'] }}" alt="Capa de {{ filme['title'] }}" style="width: 100%; border-radius: 4px;">
+                    {% else %}
+                        <div style="width: 100%; height: 300px; background-color: #eee; display: flex; align-items: center; justify-content: center;">Sem imagem</div>
+                    {% endif %}
+                    <h3 style="font-size: 16px;">{{ filme['title'] }}</h3>
+                    <p>
+                        <strong>Data de Lançamento:</strong> {{ filme.get('release_date', 'Desconhecida') }}<br>
+                        <strong>Duração:</strong> {{ filme.get('runtime', 'Desconhecida') }} min
+                    </p>
+                    <p><strong>Sinopse:</strong> 
+                        {% if filme.get('overview') %}
+                            {{ filme.overview }}
+                        {% else %}
+                            Sinopse não disponível
+                        {% endif %}
+                     </p>
+                </div>
+            {% endfor %}
+        </div>
+        
 
-            <!-- Controles de paginação -->
-            <div class="paginacao">
-                {% if pagina > 1 %}
-                    <a href="{{ url_for('sugestoes', pagina=pagina-1, genero=genero_filtro, ordenar_por=ordenar_por, ordem=ordem) }}" class="glow-on-hover">Anterior</a>
-                {% endif %}
 
-                <strong>{{ pagina }}</strong>
+        <!-- Controles de paginação -->
+        <div class="paginacao">
+            {% if pagina > 1 %}
+                <a href="{{ url_for('sugestoes', pagina=pagina-1, genero=genero_filtro, ordenar_por=ordenar_por, ordem=ordem) }}" class="glow-on-hover">Anterior</a>
+            {% endif %}
 
-                {% if pagina < total_paginas %}
-                    <a href="{{ url_for('sugestoes', pagina=pagina+1, genero=genero_filtro, ordenar_por=ordenar_por, ordem=ordem) }}" class="glow-on-hover">Próxima</a>
-                {% endif %}
-            </div>
+            <strong>{{ pagina }}</strong>
+
+            {% if pagina < total_paginas %}
+                <a href="{{ url_for('sugestoes', pagina=pagina+1, genero=genero_filtro, ordenar_por=ordenar_por, ordem=ordem) }}" class="glow-on-hover">Próxima</a>
+            {% endif %}
+        </div>
         {% else %}
             <p>Preencha os filtros para ver sugestões de filmes.</p>
         {% endif %}
