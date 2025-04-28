@@ -61,7 +61,6 @@ def buscar_generos():
 def index():
     return render_template('index.html')
 
-# Página de sugestões de filmes
 @app.route('/sugestoes', methods=['GET', 'POST'])
 def sugestoes():
     generos = buscar_generos()
@@ -73,19 +72,32 @@ def sugestoes():
     ordenar_por = request.args.get('ordenar_por', 'release_date')
     ordem = request.args.get('ordem', 'desc')
     pagina = request.args.get('pagina', 1, type=int)
+    pesquisa = request.args.get('pesquisa', '').strip()
 
-    if genero_filtro:
+    if genero_filtro == '':  # Caso o gênero seja "Todos" (ou vazio)
+        genero_filtro = None
+
+    # Se o gênero for selecionado e não for "Todos" ou se houver pesquisa
+    if genero_filtro and pesquisa:
         resultado = buscar_filmes_por_genero(genero_filtro, pagina, ordenar_por, ordem)
-        if resultado:
-            filmes = resultado.get('results', [])
-            total_filmes = resultado.get('total_results', 0)
-            total_paginas = resultado.get('total_pages', 0)
+        filmes = [filme for filme in resultado.get('results', []) if pesquisa.lower() in filme['title'].lower()]
+    elif genero_filtro:
+        # Caso haja apenas filtro de gênero
+        resultado = buscar_filmes_por_genero(genero_filtro, pagina, ordenar_por, ordem)
+        filmes = resultado.get('results', [])
+    elif pesquisa:
+        # Caso haja apenas pesquisa
+        resultado = buscar_filmes_por_nome(pesquisa, pagina)
+        filmes = resultado.get('results', [])
+    else:
+        # Caso "Todos os filmes" e sem pesquisa
+        resultado = buscar_filmes_por_genero('', pagina, ordenar_por, ordem)  # Buscar todos os filmes
+        filmes = resultado.get('results', [])
 
-            # Aplicar ordenação local se necessário
-            if ordenar_por == 'title':
-                filmes.sort(key=lambda x: x.get('title', ''), reverse=(ordem == 'desc'))
-            elif ordenar_por == 'release_date':
-                filmes.sort(key=lambda x: x.get('release_date', ''), reverse=(ordem == 'desc'))
+    # Atualização do número total de filmes e páginas
+    if resultado:
+        total_filmes = resultado.get('total_results', 0)
+        total_paginas = resultado.get('total_pages', 0)
 
     return render_template(
         'sugestoes.html',
@@ -96,8 +108,10 @@ def sugestoes():
         ordem=ordem,
         pagina=pagina,
         total_paginas=total_paginas,
-        total_filmes=total_filmes
+        total_filmes=total_filmes,
+        pesquisa=pesquisa
     )
+
 
 # Página de resultados e indicações
 @app.route('/resultados', methods=['GET', 'POST'])
@@ -209,6 +223,20 @@ def admin():
             flash('Sistema resetado com sucesso! Todas as indicações e resultados foram apagados.', 'success')
 
     return render_template('admin.html', indicacoes=indicacoes, resultado=resultados[-1] if resultados else None)
+
+def buscar_filmes_por_nome(nome, pagina=1):
+    url = f'https://api.themoviedb.org/3/search/movie'
+    params = {
+        'api_key': TMDB_API_KEY,
+        'language': 'pt-BR',
+        'query': nome,
+        'page': pagina,
+        'include_adult': False
+    }
+    response = requests.get(url, params=params)
+    if response.status_code == 200:
+        return response.json()
+    return None
 
 # Executar a aplicação
 if __name__ == '__main__':
